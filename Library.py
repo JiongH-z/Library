@@ -2,7 +2,7 @@
 import os
 
 class ReaderLoanInformation:
-    def __init__(self,name,lend_book):
+    def __init__(self,name,*lend_book):
         self.name = name
         self.lend_book = []
         for book in lend_book:
@@ -53,11 +53,11 @@ class Library:
                     json.dump([],file)
             with open(self.filepath,'r',encoding='utf-8') as file:
                 data = json.load(file)
-
-                for item in data:
-                    reader_info = ReaderLoanInformation(item['name'],item['book_name'])
-                    self.all_reader_info.append(reader_info)
-                    print(f'✅ 成功从{self.filepath}中加载数据')
+                if data:  ##!确保data不为空
+                    for item in data:
+                        reader_info = ReaderLoanInformation(item['name'],item['book_name'])
+                        self.all_reader_info.append(reader_info)
+                        print(f'✅ 成功从{self.filepath}中加载数据')
         except Exception as e:
             print(f'❌ 加载失败：{e}')
 
@@ -91,8 +91,25 @@ class Library:
                 book_name = input('请输入归还的图书名字')
                 reader_info.reduce_lend_book(book_name)
                 self.save_data()
-            else:
-                print('未查找到借阅者姓名')
-                break
+                return
+        print('未查找到借阅者姓名')
         for reader_info in self.all_reader_info:
             print(reader_info)
+
+    def run(self):
+        while True:
+            print('1.借书 2.还书 3.退出')
+            selection = int(input('请选择使用的功能'))
+            match selection:
+                case 1:
+                    self.lend_book()
+                case 2:
+                    self.return_book()
+                case 3:
+                    break
+                case _:
+                    print('无效命令')
+
+if __name__ == '__main__':
+    reader = Library()
+    reader.run()
