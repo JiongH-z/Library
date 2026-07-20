@@ -55,7 +55,8 @@ class Library:
                 data = json.load(file)
                 if data:  ##!确保data不为空
                     for item in data:
-                        reader_info = ReaderLoanInformation(item['name'],item['book_name'])
+                        ###!这里必须使用*item，把可能传入的元组解包
+                        reader_info = ReaderLoanInformation(item['name'],*item['book_name'])
                         self.all_reader_info.append(reader_info)
                         print(f'✅ 成功从{self.filepath}中加载数据')
         except Exception as e:
@@ -70,7 +71,7 @@ class Library:
         for reader_info in self.all_reader_info:
             if name == reader_info.name:
                 reader_info.add_loan_book(book_name)
-                print('已更新借书信息')
+                print('借书成功')
                 print(reader_info)
                 self.save_data()
                 return
@@ -78,8 +79,6 @@ class Library:
         reader_info = ReaderLoanInformation(name,book_name)
         self.all_reader_info.append(reader_info)
         print('已新建读者信息，借书成功')
-        for reader_info in self.all_reader_info:
-            print(reader_info)
         self.save_data()
 
 
@@ -90,15 +89,19 @@ class Library:
             if name == reader_info.name:
                 book_name = input('请输入归还的图书名字')
                 reader_info.reduce_lend_book(book_name)
+                print('还书成功')
                 self.save_data()
                 return
         print('未查找到借阅者姓名')
+
+
+    def show_all_info(self):
         for reader_info in self.all_reader_info:
             print(reader_info)
 
     def run(self):
         while True:
-            print('1.借书 2.还书 3.退出')
+            print('1.借书 2.还书 3.展示所有借阅信息 4.退出')
             selection = int(input('请选择使用的功能'))
             match selection:
                 case 1:
@@ -106,6 +109,8 @@ class Library:
                 case 2:
                     self.return_book()
                 case 3:
+                    self.show_all_info()
+                case 4:
                     break
                 case _:
                     print('无效命令')
