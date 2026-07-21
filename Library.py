@@ -33,7 +33,7 @@ class Library:
         self.all_reader_info = []    #!存的全是对象
         self.filepath = 'Library_info.json'
 
-        ###存的是图书数据
+        ###存的是图书对象 book = Book(book_name,remain_num)
         self.all_remain_book = []
         self.book_filepath = 'book_remain.json'
 
@@ -41,10 +41,11 @@ class Library:
         self.load_data()
         self.load_book_data()
 
+    ##初始化书本以及数量
     def set_book(self):
         print('进入图书管理模式')
         book_name = input('请输入新建图书名字')
-        book_num = input('请输入图书存量')
+        book_num = int(input('请输入图书存量'))
         book = Book(book_name,book_num)
         self.all_remain_book.append(book)
         print('成功在图书馆中存入新书')
@@ -117,18 +118,26 @@ class Library:
 
         book_name = input('请输入借阅的图书名字')
 
-        for reader_info in self.all_reader_info:
-            if name == reader_info.name:
-                reader_info.add_lend_book(book_name)
-                print('✅借书成功')
-                print(reader_info)
+        #!这里的item虽然只是循环变量，但是item.reduce_num()是调用对象的方法，直接改变列表里对象的值，所以可以直接写item.reduce_num()
+        for item in self.all_remain_book:
+            if book_name == item.book_name and item.remain_num > 0:
+                item.reduce_num()
+                self.save_data()
+                for reader_info in self.all_reader_info:
+                    if name == reader_info.name:
+                        reader_info.add_lend_book(book_name)
+                        print('✅借书成功')
+                        print(reader_info)
+                        self.save_data()
+                        return
+
+                reader_info = ReaderLoanInformation(name,book_name)
+                self.all_reader_info.append(reader_info)
+                print('✅已新建读者信息，借书成功')
                 self.save_data()
                 return
+        print('图书库中没有此书或已被借走')
 
-        reader_info = ReaderLoanInformation(name,book_name)
-        self.all_reader_info.append(reader_info)
-        print('✅已新建读者信息，借书成功')
-        self.save_data()
 
 
     def return_book(self):
@@ -137,10 +146,14 @@ class Library:
         for reader_info in self.all_reader_info:
             if name == reader_info.name:
                 book_name = input('请输入归还的图书名字')
-                reader_info.reduce_lend_book(book_name)
-                print('✅还书成功')
-                self.save_data()
-                return
+                for item in self.all_remain_book:
+                    if book_name == item.book_name:
+                        item.add_num()
+                        self.save_data()
+                        reader_info.reduce_lend_book(book_name)
+                        print('✅还书成功')
+                        self.save_data()
+                        return
         print('❌未查找到借阅者姓名')
 
 
@@ -155,7 +168,7 @@ class Library:
     def run(self):
         while True:
             print('1.借书 2.还书 3.展示所有借阅信息 4.进入图书管理模式 5.查看所有图书 6.退出')
-            selection = (input('请选择使用的功能'))
+            selection = input('请选择使用的功能')
             match selection:
                 case '1':
                     self.lend_book()
